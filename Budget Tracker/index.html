@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Budget Tracking System</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>Budget Tracking System</h1>
+            <div class="header-actions">
+                <input type="file" id="excelUpload" accept=".xlsx,.xls" style="display: none;">
+                <button id="uploadTrigger" class="btn btn-hidden" title="Upload Master Excel">⬆</button>
+                <button id="configBtn" class="btn btn-secondary">Configuration</button>
+                <button id="spendThemeBtn" class="btn btn-secondary">Spend Theme</button>
+                <button id="exportBtn" class="btn btn-secondary">Export Report</button>
+            </div>
+        </header>
+
+        <!-- Budget Overview Cards -->
+        <div class="budget-overview">
+            <div class="budget-card">
+                <div class="budget-card-header">Team Budget</div>
+                <div class="budget-card-amount" id="totalTeamBudget">₹0</div>
+                <div class="budget-card-footer">
+                    <span>Spent: <span id="teamBudgetSpent">₹0</span></span>
+                    <span>Remaining: <span id="teamBudgetRemaining">₹0</span></span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="teamBudgetProgress"></div>
+                </div>
+                <div class="budget-utilization" id="teamBudgetUtilization">0% utilized</div>
+            </div>
+
+            <div class="budget-card">
+                <div class="budget-card-header">Connectivity Budget</div>
+                <div class="budget-card-amount" id="totalConnectivityBudget">₹0</div>
+                <div class="budget-card-footer">
+                    <span>Spent: <span id="connectivityBudgetSpent">₹0</span></span>
+                    <span>Remaining: <span id="connectivityBudgetRemaining">₹0</span></span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="connectivityBudgetProgress"></div>
+                </div>
+                <div class="budget-utilization" id="connectivityBudgetUtilization">0% utilized</div>
+            </div>
+        </div>
+
+        <!-- Tab Navigation -->
+        <div class="tabs">
+            <button class="tab active" data-tab="members">Team Members</button>
+            <button class="tab" data-tab="expenses">Expenses</button>
+            <button class="tab" data-tab="attrition">Attrition</button>
+        </div>
+
+        <!-- Members Tab -->
+        <div id="membersTab" class="tab-content active">
+            <div class="section-header">
+                <h2>Team Members</h2>
+                <button id="addMemberBtn" class="btn btn-primary">+ Add Member</button>
+            </div>
+
+            <div class="filters">
+                <select id="roleFilter" class="filter-select">
+                    <option value="all">All Roles</option>
+                    <option value="BPS">BPS</option>
+                    <option value="TL">TL</option>
+                    <option value="TM">TM</option>
+                </select>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table" id="membersTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Team Leader</th>
+                            <th>Team Budget</th>
+                            <th>Connectivity Budget</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="membersTableBody">
+                        <!-- Members will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Expenses Tab -->
+        <div id="expensesTab" class="tab-content">
+            <div class="section-header">
+                <h2>Expense Tracking</h2>
+                <button id="addExpenseBtn" class="btn btn-primary">+ Add Expense</button>
+            </div>
+
+            <div class="filters">
+                <select id="expenseTypeFilter" class="filter-select">
+                    <option value="all">All Categories</option>
+                    <option value="team">Team Budget</option>
+                    <option value="connectivity">Connectivity Budget</option>
+                </select>
+                <select id="expenseMonthFilter" class="filter-select">
+                    <option value="all">All Months</option>
+                </select>
+                <select id="expenseMemberFilter" class="filter-select">
+                    <option value="all">All Members</option>
+                </select>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table" id="expensesTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Name</th>
+                            <th>Amount</th>
+                            <th>Event Name</th>
+                            <th>Category</th>
+                            <th>Team Member</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="expensesTableBody">
+                        <!-- Expenses will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- Attrition Tab -->
+        <div id="attritionTab" class="tab-content">
+            <div class="section-header">
+                <h2>Attrition Management</h2>
+                <button id="addAttritionBtn" class="btn btn-primary">+ Add Exit</button>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table" id="attritionTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Role</th>
+                            <th>Exit Month</th>
+                            <th>Budget Impact</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="attritionTableBody">
+                        <!-- Attrition entries will be populated here -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Configuration Modal -->
+    <div id="configModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Budget Configuration</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Budget Per Head - BPS</label>
+                    <div class="input-row">
+                        <input type="number" id="bpsTeamBudget" placeholder="Team Budget">
+                        <input type="number" id="bpsConnectivityBudget" placeholder="Connectivity Budget">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Budget Per Head - TL</label>
+                    <div class="input-row">
+                        <input type="number" id="tlTeamBudget" placeholder="Team Budget">
+                        <input type="number" id="tlConnectivityBudget" placeholder="Connectivity Budget">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Budget Per Head - TM</label>
+                    <div class="input-row">
+                        <input type="number" id="tmTeamBudget" placeholder="Team Budget">
+                        <input type="number" id="tmConnectivityBudget" placeholder="Connectivity Budget">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Current Month</label>
+                    <input type="month" id="currentMonth">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveConfigBtn" class="btn btn-primary">Save Configuration</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Member Modal -->
+    <div id="memberModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="memberModalTitle">Add Team Member</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Name</label>
+                    <input type="text" id="memberName" placeholder="Enter member name">
+                </div>
+                <div class="form-group">
+                    <label>Role</label>
+                    <select id="memberRole">
+                        <option value="BPS">BPS</option>
+                        <option value="TL">TL</option>
+                        <option value="TM">TM</option>
+                    </select>
+                </div>
+                <div class="form-group" id="tlFieldGroup">
+                    <label>Team Leader (for BPS only)</label>
+                    <input type="text" id="memberTL" placeholder="Enter TL name (optional)">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveMemberBtn" class="btn btn-primary">Save Member</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Expense Modal -->
+    <div id="expenseModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Expense</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Expense Name</label>
+                    <input type="text" id="expenseName" placeholder="Enter expense name">
+                </div>
+                <div class="form-group">
+                    <label>Amount</label>
+                    <input type="number" id="expenseAmount" placeholder="Enter amount">
+                </div>
+                <div class="form-group">
+                    <label>Event Name</label>
+                    <input type="text" id="expenseEvent" placeholder="Enter event name">
+                </div>
+                <div class="form-group">
+                    <label>Category</label>
+                    <select id="expenseCategory">
+                        <option value="team">Team Budget</option>
+                        <option value="connectivity">Connectivity Budget</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Team Member</label>
+                    <select id="expenseMember">
+                        <option value="">Select member (optional)</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="expenseDate">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveExpenseBtn" class="btn btn-primary">Save Expense</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Attrition Modal -->
+    <div id="attritionModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Add Exit</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="form-group">
+                    <label>Team Member</label>
+                    <select id="attritionMember">
+                        <option value="">Select member</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Exit Month</label>
+                    <input type="month" id="attritionMonth">
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button id="saveAttritionBtn" class="btn btn-primary">Save Exit</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Spend Theme Modal -->
+    <div id="spendThemeModal" class="modal">
+        <div class="modal-content" style="max-width: 1000px;">
+            <div class="modal-header">
+                <h2>Spend Theme - Monthly Analysis</h2>
+                <span class="close">&times;</span>
+            </div>
+            <div class="modal-body">
+                <div class="filters" style="margin-bottom: 25px;">
+                    <select id="chartTLFilter" class="filter-select">
+                        <option value="all">All Team Leaders</option>
+                    </select>
+                    <select id="chartMonthRangeFilter" class="filter-select">
+                        <option value="all">All Months</option>
+                        <option value="q1">Q1 (Jan-Mar)</option>
+                        <option value="q2">Q2 (Apr-Jun)</option>
+                        <option value="q3">Q3 (Jul-Sep)</option>
+                        <option value="q4">Q4 (Oct-Dec)</option>
+                    </select>
+                </div>
+                <div style="position: relative; height: 400px; background: white; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px;">
+                    <canvas id="spendChart"></canvas>
+                </div>
+                <div style="margin-top: 25px; padding: 20px; background: #f9fafb; border-radius: 8px; border: 1px solid #e5e7eb;">
+                    <h3 style="font-size: 16px; font-weight: 700; margin-bottom: 15px; color: #1f2937;">Monthly Summary</h3>
+                    <div id="monthlySummary" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <!-- Summary will be populated here -->
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>
