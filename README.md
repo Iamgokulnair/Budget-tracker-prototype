@@ -1,4 +1,4 @@
-# IC01 Budget Tracker - Working Prototype
+# Budget Tracker - Working Prototype
 
 **The Problem:** Managing 15+ team members across 5 TLs with dual budget pools (Team + Connectivity) in Excel. Monthly reconciliation takes hours and leadership visibility is point-in-time, not real-time.
 
